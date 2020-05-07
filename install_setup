@@ -203,6 +203,9 @@ setup2()
         echo "No internet, check for internet connection"
     fi
 }
+
+setup2
+}
 EOL
 
 
