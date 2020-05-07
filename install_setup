@@ -78,6 +78,7 @@ chmod +x /mnt/Arch-Setup
 create_copy_setup()
 {
 cat > /mnt/Arch-Setup << EOL
+#!/bin/bash
 check_for_internet2()
 {
 nc -z 8.8.8.8 53  >/dev/null 2>&1
