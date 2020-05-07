@@ -52,7 +52,7 @@ edit_mirrorlist()
 }
 pacstrap_packages()
 {
-    local base_packages="base base-devel linux linux-firmware vim"
+    local base_packages="base base-devel linux linux-firmware vim gnu-netcat"
     pacstrap /mnt $base_packages
 }
 update_system_clock()
