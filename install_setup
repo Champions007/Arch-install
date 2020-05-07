@@ -150,7 +150,7 @@ add_user()
 }
 exit_and_umount()
 {
-    umount -a
+    exit && umount -a
 }
 setup()
 {
