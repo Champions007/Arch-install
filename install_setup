@@ -1,9 +1,118 @@
 #!/bin/bash
+#Post Installion
+
+check_for_internet()
+{
+nc -z 8.8.8.8 53  >/dev/null 2>&1
+online=$?
+if [ $online -eq 0 ]; then
+    return 0
+else
+    return 1
+fi
+}
+
+loadkeys()
+{
+    loadkeys lv &
+}
+
+update_system_clock()
+{
+    timedatectl set-ntp true
+}
+
+edit_mirrorlist()
+{
+    vim /etc/pacman.d/mirrorlist && pacman -Syyy
+}
+
+edit_partions()
+{
+    lsblk
+    echo -e " What partion you want to edit (like dev/sxx): "
+    read partion_to_edit
+    fdisk $partion_to_edit
+}
+
+makefs_partions()
+{
+    lsblk
+    echo -e "Enter partion name for boot partion:"
+    read boot_partion_to_make
+    echo -e "Enter partion name for root partion:"
+    read root_partion_to_make
+    
+    mkfs.fat -F32 $boot_partion_to_make
+    mkfs.ext4 $root_partion_to_make
+}
+
+mount_made_partions()
+{
+    mount $root_partion_to_make /mnt
+    mkdir /mnt/boot
+    mount $boot_partion_to_make /mnt/boot
+}
+
+pacstrap_packages()
+{
+    local base_packages="base base-devel linux linux-firmware vim gnu-netcat"
+    pacstrap /mnt $base_packages
+}
+
+genfstab_file()
+{
+    genfstab -U /mnt >> /mnt/etc/fstab
+}
+
+change_archroot()
+{
+    arch-chroot /mnt ./Arch-Setup
+}
+make_setup_executable()
+{
+chmod +x /mnt/Arch-Setup
+}
+
+#################################
+create_copy_setup()
+{
+cat > /mnt/Arch-Setup << EOL
+check_for_internet2()
+{
+nc -z 8.8.8.8 53  >/dev/null 2>&1
+online=$?
+if [ $online -eq 0 ]; then
+    return 0
+else
+    return 1
+fi
+}
+
+create_swapfile()
+{
+    fallocate -l 2GB /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo "" >> /etc/fstab
+    echo "/swapfile none swap defaults 0 0" >> /etc/fstab
+}
 
 set_timezone()
 {
     ln -sf /usr/share/zoneinfo/Europe/Riga /etc/localtime
 }
+
+hwclock_to_systemclock()
+{
+    hwclock --systohc
+}
+edit_locales()
+{
+    vim /etc/locale.gen && locale-gen
+}
+
 set_locales()
 {
 local locale_file=/etc/locale.conf
@@ -30,89 +139,6 @@ local keyboard_file=/etc/vconsole.conf
 echo "KEYMAP=lv" >> $keyboard_file
 }
 
-loadkeys()
-{
-    loadkeys lv &
-}
-
-check_for_internet()
-{
-nc -z 8.8.8.8 53  >/dev/null 2>&1
-online=$?
-if [ $online -eq 0 ]; then
-    return 0
-else
-    return 1
-fi
-}
-
-edit_mirrorlist()
-{
-    vim /etc/pacman.d/mirrorlist && pacman -Syyy
-}
-pacstrap_packages()
-{
-    local base_packages="base base-devel linux linux-firmware vim gnu-netcat"
-    pacstrap /mnt $base_packages
-}
-update_system_clock()
-{
-    timedatectl set-ntp true
-}
-
-edit_partions()
-{
-    lsblk
-    echo -e " What partion you want to edit (like dev/sxx): "
-    read partion_to_edit
-    fdisk $partion_to_edit
-}
-makefs_partions()
-{
-    lsblk
-    echo -e "Enter partion name for boot partion:"
-    read boot_partion_to_make
-    echo -e "Enter partion name for root partion:"
-    read root_partion_to_make
-    
-    mkfs.fat -F32 $boot_partion_to_make
-    mkfs.ext4 $root_partion_to_make
-}
-
-mount_made_partions()
-{
-    mount $root_partion_to_make /mnt
-    mkdir /mnt/boot
-    mount $boot_partion_to_make /mnt/boot
-}
-
-genfstab_file()
-{
-    genfstab -U /mnt >> /mnt/etc/fstab
-}
-
-change_archroot()
-{
-    arch-chroot /mnt
-}
-
-create_swapfile()
-{
-    fallocate -l 2GB /swapfile
-    chmod 600 /swapfile
-    mkswap /swapfile
-    swapon /swapfile
-    echo "" >> /etc/fstab
-    echo "/swapfile none swap defaults 0 0" >> /etc/fstab
-}
-hwclock_to_systemclock()
-{
-    hwclock --systohc
-}
-edit_locales()
-{
-    vim /etc/locale.gen && locale-gen
-}
 set_hostname()
 {
     echo "archbox" >> /etc/hostname
@@ -152,19 +178,11 @@ exit_and_umount()
 {
     exit
 }
-setup()
+
+setup2()
 {
-    check_for_internet
+    check_for_internet2
     if [[ $? == 0 ]]; then
-        loadkeys &&\
-            update_system_clock &&\
-            edit_mirrorlist &&\
-            edit_partions &&\
-            makefs_partions &&\
-            mount_made_partions &&\
-            pacstrap_packages &&\
-            genfstab_file &&\
-            change_archroot &&\
             create_swapfile &&\
             set_timezone &&\
             hwclock_to_systemclock &&\
@@ -184,5 +202,28 @@ setup()
         echo "No internet, check for internet connection"
     fi
 }
+EOL
 
-setup
+
+install()
+{
+    check_for_internet
+    if [[ $? == 0 ]]; then
+        loadkeys &&\
+            update_system_clock &&\
+            edit_mirrorlist &&\
+            edit_partions &&\
+            makefs_partions &&\
+            mount_made_partions &&\
+            pacstrap_packages &&\
+            create_copy_setup &&\
+            make_setup_executable &&\
+            genfstab_file &&\
+            change_archroot\
+            || echo "Error"
+    else
+        echo "No internet, check for internet connection"
+    fi
+}
+
+install
