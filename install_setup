@@ -32,7 +32,7 @@ echo "KEYMAP=lv" >> $keyboard_file
 
 loadkeys()
 {
-    loadkeys lv
+    loadkeys lv &
 }
 
 check_for_internet()
