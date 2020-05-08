@@ -1,0 +1,127 @@
+#!/bin/bash
+check_for_internet2()
+{
+nc -z 8.8.8.8 53  >/dev/null 2>&1
+online=$?
+if [ $online -eq 0 ]; then
+    return 0
+else
+    return 1
+fi
+}
+
+create_swapfile()
+{
+    fallocate -l 2GB /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo "" >> /etc/fstab
+    echo "/swapfile none swap defaults 0 0" >> /etc/fstab
+}
+
+set_timezone()
+{
+    ln -sf /usr/share/zoneinfo/Europe/Riga /etc/localtime
+}
+
+hwclock_to_systemclock()
+{
+    hwclock --systohc
+}
+edit_locales()
+{
+    vim /etc/locale.gen && locale-gen
+}
+
+set_locales()
+{
+local locale_file=/etc/locale.conf
+echo "LANG=en_US.UTF-8" >> $locale_file
+echo "LANGUAGE=" >> $locale_file
+echo "LC_CTYPE="en_US.UTF-8"" >> $locale_file
+echo "LC_NUMERIC=lv_LV.UTF-8" >> $locale_file
+echo "LC_TIME=lv_LV.UTF-8" >> $locale_file
+echo "LC_COLLATE="en_US.UTF-8"" >> $locale_file
+echo "LC_MONETARY=lv_LV.UTF-8" >> $locale_file
+echo "LC_MESSAGES="en_US.UTF-8"" >> $locale_file
+echo "LC_PAPER=lv_LV.UTF-8" >> $locale_file
+echo "LC_NAME=lv_LV.UTF-8" >> $locale_file
+echo "LC_ADDRESS=lv_LV.UTF-8" >> $locale_file
+echo "LC_TELEPHONE=lv_LV.UTF-8" >> $locale_file
+echo "LC_MEASUREMENT=lv_LV.UTF-8" >> $locale_file
+echo "LC_IDENTIFICATION=lv_LV.UTF-8" >> $locale_file
+echo "LC_ALL=" >> $locale_file
+}
+
+set_keyboard()
+{
+local keyboard_file=/etc/vconsole.conf
+echo "KEYMAP=lv" >> $keyboard_file
+}
+
+set_hostname()
+{
+    echo "archbox" >> /etc/hostname
+}
+set_hosts()
+{
+    echo "127.0.0.1     localhost" >> /etc/hosts
+    echo "::1       localhost" >> /etc/hosts
+    echo "127.0.1.1     archbox.localdomain     archbox" >> /etc/hosts
+}
+set_root_passwd()
+{
+    echo "Enter new root password:"
+    passwd
+}
+install_bootloader_and_tool_packages()
+{
+    local tools_for_booting_and_stuff="grub efibootmgr networkmanager network-manager-applet wireless_tools wpa_supplicant dialog os-prober mtools dosfstools linux-headers git pulseaudio pulseaudio-alsa xdg-utils xdg-user-dirs gnu-netcat"
+    pacman -S $tools_for_booting_and_stuff
+}
+set_grub_bootloader()
+{
+    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
+enable_services()
+{
+    systemctl enable NetworkManager
+}
+add_user()
+{
+    useradd -mG wheel champions007
+    passwd champions007
+    EDITOR=vim visudo
+}
+exit_and_umount()
+{
+    exit
+}
+
+setup2()
+{
+    check_for_internet2
+    if [[ $? == 0 ]]; then
+            create_swapfile &&\
+            set_timezone &&\
+            hwclock_to_systemclock &&\
+            edit_locales &&\
+            set_locales &&\
+            set_keyboard &&\
+            set_hostname &&\
+            set_hosts &&\
+            set_root_passwd &&\
+            install_bootloader_and_tool_packages &&\
+            set_grub_bootloader &&\
+            enable_services &&\
+            add_user &&\
+            exit_and_umount\
+            || echo "Error"
+    else
+        echo "No internet, check for internet connection"
+    fi
+}
+
+setup2
