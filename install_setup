@@ -71,6 +71,7 @@ change_archroot()
 }
 make_setup_executable()
 {
+mv Arch-Setup /mnt/Arch-Setup
 chmod +x /mnt/Arch-Setup
 }
 
@@ -85,7 +86,6 @@ install()
             makefs_partions &&\
             mount_made_partions &&\
             pacstrap_packages &&\
-            create_copy_setup &&\
             make_setup_executable &&\
             genfstab_file &&\
             change_archroot\
