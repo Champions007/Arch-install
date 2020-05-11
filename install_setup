@@ -24,7 +24,7 @@ update_system_clock()
 
 edit_mirrorlist()
 {
-    vim /etc/pacman.d/mirrorlist && pacman -Syyu
+    vim /etc/pacman.d/mirrorlist && pacman -Syyy
 }
 
 edit_partions()
