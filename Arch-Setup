@@ -91,6 +91,7 @@ enable_services()
 }
 add_user()
 {
+    echo "Enter your username:"
     read username
     useradd -mG wheel $username
     passwd $username
