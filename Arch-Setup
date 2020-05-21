@@ -82,7 +82,7 @@ install_bootloader_and_tool_packages()
 }
 set_grub_bootloader()
 {
-    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Grub --removable
     grub-mkconfig -o /boot/grub/grub.cfg
 }
 enable_services()
