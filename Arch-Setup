@@ -77,7 +77,7 @@ set_root_passwd()
 }
 install_bootloader_and_tool_packages()
 {
-    local tools_for_booting_and_stuff="grub efibootmgr networkmanager network-manager-applet wireless_tools wpa_supplicant dialog os-prober mtools dosfstools linux-headers git pulseaudio pulseaudio-alsa xdg-utils xdg-user-dirs gnu-netcat"
+    local tools_for_booting_and_stuff="grub efibootmgr networkmanager network-manager-applet wireless_tools wpa_supplicant dialog os-prober mtools dosfstools linux-headers git pulseaudio pulseaudio-alsa xdg-utils xdg-user-dirs pciutils usbutils gnu-netcat"
     pacman -S $tools_for_booting_and_stuff
 }
 set_grub_bootloader()
