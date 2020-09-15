@@ -71,8 +71,8 @@ change_archroot()
 }
 make_setup_executable()
 {
-mv Arch-Setup /mnt/Arch-Setup
-chmod +x /mnt/Arch-Setup
+    mv Arch-Setup /mnt/Arch-Setup
+    chmod +x /mnt/Arch-Setup
 }
 
 install()
