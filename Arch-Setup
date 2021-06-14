@@ -82,6 +82,10 @@ install_bootloader_and_tool_packages()
 }
 set_grub_bootloader()
 {
+    echo "" >> /etc/default/grub
+    echo "# Uncomment and set variable value to false, to enable multiple os scanning with os-prober, because stupid gnu developers thought this could be cool troll :(." >> /etc/default/grub
+    echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
+    
     grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
     grub-mkconfig -o /boot/grub/grub.cfg
 }
